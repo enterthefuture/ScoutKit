@@ -87,9 +87,6 @@ public class ScoutMaster extends JFrame {
                 new ActionListener() {
                     public void actionPerformed(ActionEvent e) {
                         commitStats();
-                        stats =
-                          new HashMap<MatchPair, HashMap<String, Integer>>();
-                        outputBox.setText("");
                     }
                 }
         );
@@ -227,6 +224,9 @@ public class ScoutMaster extends JFrame {
             ResultSet stats = dhelper.printStats(STAT_STRING);
             stattable.setModel(buildTableModel(stats));
         }
+        stats =
+          new HashMap<MatchPair, HashMap<String, Integer>>();
+        outputBox.setText("");
     }
     
     private class ScoutServer extends Thread {

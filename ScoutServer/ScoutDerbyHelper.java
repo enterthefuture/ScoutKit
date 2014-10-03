@@ -204,6 +204,7 @@ public class ScoutDerbyHelper {
              * the system property derby.system.home points to, or the current
              * directory (user.dir) if derby.system.home is not set.
              */
+			Class.forName("org.apache.derby.jdbc.EmbeddedDriver").newInstance();
             conn = DriverManager.getConnection(protocol + dbName
                     + ";create=true", props);
 
@@ -213,6 +214,8 @@ public class ScoutDerbyHelper {
             statements.add(s);
         } catch (SQLException sqle) {
             printSQLException(sqle);
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
     
