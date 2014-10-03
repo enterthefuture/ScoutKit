@@ -1,0 +1,287 @@
+import java.io.*;
+import java.awt.*;
+import java.awt.event.*;
+import javax.swing.*;
+import javax.swing.border.*;
+import java.text.*;
+import java.util.*;
+import java.net.*;
+
+public class ScoutBox extends JFrame {
+
+    public static final int DEFAULT_SERVER_PORT = 15555;
+
+    private static final int EXIT_SUCCESS = 0;
+    private static final int EXIT_FAILURE = 1;
+
+    private int serverPort;
+
+    //private MessageServer mserver;
+
+    private JTextArea outputBox;
+
+    private JTextField host;
+    private JTextField port;
+    private JTextField scoutID;
+    private JTextField teamNo;
+    private JTextField match;
+
+    private JButton send;
+    private JButton clear;
+
+    private JButton highGoal;
+    private JButton lowGoal;
+    private JButton barThrow;
+    private JButton barCatch;
+
+    public ScoutBox(int serverPort) {
+        super("ScoutBox: A FRC Scoring System");
+
+        this.serverPort = serverPort;
+
+        //mserver = new MessageServer();
+
+        host = new JTextField("127.0.0.1", 15);
+        port = new JTextField(Integer.toString(DEFAULT_SERVER_PORT), 5);
+        scoutID = new JTextField(10);
+        teamNo = new JTextField(5);
+        match = new JTextField(5);
+
+        outputBox = new JTextArea();
+        outputBox.setEditable(false);
+
+        ActionListener sendmsg = new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                sendMessage(e.getActionCommand());
+            }
+        };
+
+        highGoal = new JButton("High Goal");
+        highGoal.setMnemonic(KeyEvent.VK_1);
+        highGoal.setActionCommand("high");
+        highGoal.addActionListener(sendmsg);
+
+        lowGoal = new JButton("Low Goal");
+        lowGoal.setMnemonic(KeyEvent.VK_2);
+        lowGoal.setActionCommand("low");
+        lowGoal.addActionListener(sendmsg);
+
+        barThrow = new JButton("Truss Throw");
+        barThrow.setMnemonic(KeyEvent.VK_3);
+        barThrow.setActionCommand("throw");
+        barThrow.addActionListener(sendmsg);
+
+        barCatch = new JButton("Truss Catch");
+        barCatch.setMnemonic(KeyEvent.VK_4);
+        barCatch.setActionCommand("catch");
+        barCatch.addActionListener(sendmsg);
+
+        send = new JButton("Send");
+        send.setMnemonic(KeyEvent.VK_S);
+
+        clear = new JButton("Clear");
+        clear.setMnemonic(KeyEvent.VK_C);
+
+        outputBox.setBorder(new BevelBorder(BevelBorder.RAISED));
+
+        clear.addActionListener(
+                new ActionListener() {
+                    public void actionPerformed(ActionEvent e) {
+                        clearFields();
+                    }
+                }
+        );
+
+        buildGUI();
+
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+
+        setSize(650, 500);
+
+        setVisible(true);
+    }
+
+    private void buildGUI() {
+        JMenuBar menubar = new JMenuBar();
+
+        menubar.add(getMainMenu());
+
+        setJMenuBar(menubar);
+
+        Container c = getContentPane();
+
+        c.setLayout(new BorderLayout());
+
+        c.add(getTextAreaPanel(), BorderLayout.CENTER);
+
+        c.add(getMainPanel(), BorderLayout.SOUTH);
+    }
+
+    private JMenu getMainMenu() {
+        JMenu menu = new JMenu("File");
+
+        JMenuItem exit = new JMenuItem("Exit");
+
+        exit.addActionListener(
+                new ActionListener() {
+                    public void actionPerformed(ActionEvent e) {
+                        System.exit(EXIT_SUCCESS);
+                    }
+                }
+        );
+
+        menu.add(exit);
+
+        return menu;
+    }
+
+    private JPanel getTextAreaPanel() {
+        JPanel panel = new JPanel(new GridLayout(1, 2));
+        panel.add(new JScrollPane(outputBox));
+        return panel;
+    }
+
+    private JPanel getMainPanel() {
+        JPanel panel = new JPanel(new GridBagLayout());
+        int row = 0;
+        panel.setSize(650, 100);
+
+        GridBagConstraints gbc = new GridBagConstraints();
+
+        gbc.fill = GridBagConstraints.NONE;
+        gbc.gridy = row++;
+        gbc.gridx = 0;
+        gbc.gridwidth = 2;
+        gbc.anchor = GridBagConstraints.CENTER;
+        panel.add(new JLabel("Server Settings:"), gbc);
+        gbc.gridwidth = 1;
+
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.ipadx = 20;
+        gbc.gridy = row++;
+        gbc.gridx = 0;
+        panel.add(new JLabel("Remote Host:"), gbc);
+        gbc.gridx = 1;
+        panel.add(host, gbc);
+
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.gridy = row++;
+        gbc.gridx = 0;
+        panel.add(new JLabel("Remote Port:"), gbc);
+        gbc.gridx = 1;
+        panel.add(port, gbc);
+
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.gridy = row++;
+        gbc.gridx = 0;
+        panel.add(new JLabel("Your Name:"), gbc);
+        gbc.gridx = 1;
+        panel.add(scoutID, gbc);
+
+        gbc.fill = GridBagConstraints.NONE;
+        gbc.gridy = row++;
+        gbc.gridx = 0;
+        gbc.gridwidth = 2;
+        gbc.anchor = GridBagConstraints.CENTER;
+        panel.add(new JLabel("Data Input:"), gbc);
+        gbc.gridwidth = 1;
+
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.gridy = row++;
+        gbc.gridx = 0;
+        panel.add(new JLabel("Team Number:"), gbc);
+        gbc.gridx = 1;
+        panel.add(teamNo, gbc);
+
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.gridy = row++;
+        gbc.gridx = 0;
+        panel.add(new JLabel("Match Number:"), gbc);
+        gbc.gridx = 1;
+        panel.add(match, gbc);
+
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.gridy = row++;
+        gbc.gridx = 0;
+        panel.add(lowGoal, gbc);
+        gbc.gridx = 1;
+        panel.add(highGoal, gbc);
+
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.gridy = row++;
+        gbc.gridx = 0;
+        panel.add(barThrow, gbc);
+        gbc.gridx = 1;
+        panel.add(barCatch, gbc);
+
+        return panel;
+    }
+
+    private void sendMessage(String event) {
+        try {
+            Socket remoteHost = new Socket(host.getText(), Integer.parseInt(port.getText()));
+
+            ObjectOutputStream output = new ObjectOutputStream(remoteHost.getOutputStream());
+
+            Message m = new Message(scoutID.getText(), Integer.parseInt(teamNo.getText()), Integer.parseInt(match.getText()), event, 1);
+
+            output.writeObject(m);
+            
+            output.flush();
+            output.close();
+
+            outputBox.append(m.toString() + "\n\n");
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(this, "Unable to send your message. Perhaps the destination's IP address, hostname, \nor tcp port number is incorrect?", "Network Communication Error", JOptionPane.WARNING_MESSAGE);
+
+            System.err.println(e);
+        }
+    }
+
+    private void clearFields() {
+        teamNo.setText(null);
+        attribute.setText(null);
+    }
+
+    private class MessageServer extends Thread {
+
+        private ServerSocket server;
+        private Socket client;
+
+        public MessageServer() {
+            try {
+                server = new ServerSocket(serverPort);
+            } catch (Exception e) {
+                JOptionPane.showMessageDialog(ScoutBox.this, "Unable to create server socket.", "Local Host Server Error", JOptionPane.WARNING_MESSAGE);
+
+                System.err.println(e);
+
+                System.exit(EXIT_FAILURE);
+            }
+        }
+
+        public void run() {
+            while (true) {
+                try {
+                    client = server.accept();
+
+                    outputBox.append((new ObjectInputStream(client.getInputStream())).readObject().toString() + "\n\n");
+
+                    client.close();
+                } catch (Exception e) {
+                    JOptionPane.showMessageDialog(ScoutBox.this, "Error accepting client connection.", "Network Communication Error", JOptionPane.WARNING_MESSAGE);
+
+                    System.err.println(e);
+                }
+            }
+        }
+    }
+
+    public void runApp() {
+        //mserver.start();
+    }
+
+    public static void main(String[] args) {
+        (new ScoutBox((args.length == 0) ? ScoutBox.DEFAULT_SERVER_PORT : Integer.parseInt(args[0]))).runApp();
+    }
+}

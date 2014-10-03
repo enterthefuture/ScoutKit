@@ -1,4 +1,7 @@
 *.class
+scoutDB/
+derby.log
+derby.properties
 
 # Mobile Tools for Java (J2ME)
 .mtj.tmp/
