@@ -2,6 +2,7 @@
 scoutDB/
 derby.log
 derby.properties
+src/org/apache/
 
 # Mobile Tools for Java (J2ME)
 .mtj.tmp/

@@ -1,17 +1,23 @@
+package org.scoutkit.scoutmaster;
 
 import java.io.*;
+import java.text.*;
+import java.util.*;
+import java.net.*;
+
 import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
 import javax.swing.border.*;
-import java.text.*;
-import java.util.*;
-import java.net.*;
+import javax.swing.table.DefaultTableModel;
+import javax.swing.text.DefaultCaret;
+
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
-import javax.swing.table.DefaultTableModel;
-import javax.swing.text.DefaultCaret;
+
+
+import org.scoutkit.util.Message;
 
 public class ScoutMaster extends JFrame {
 
@@ -101,8 +107,19 @@ public class ScoutMaster extends JFrame {
                 }
         );
         
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        this.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
+        this.addWindowListener( new WindowAdapter() {
 
+            @Override
+            public void windowClosing(WindowEvent e) {
+                int confirm = JOptionPane.showOptionDialog(null, "Are You Sure to Close Application?", "Exit Confirmation", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE, null, null, null);
+                if (confirm == 0) {
+                    dhelper.closeDB();
+                   System.exit(EXIT_SUCCESS);
+                }
+            }
+        });
+        
         setSize(650, 500);
 
         setVisible(true);

@@ -1,11 +1,16 @@
+package org.scoutkit.scoutbox;
+
 import java.io.*;
+import java.text.*;
+import java.util.*;
+import java.net.*;
+
 import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
 import javax.swing.border.*;
-import java.text.*;
-import java.util.*;
-import java.net.*;
+
+import org.scoutkit.util.Message;
 
 public class ScoutBox extends JFrame {
 
@@ -240,7 +245,6 @@ public class ScoutBox extends JFrame {
 
     private void clearFields() {
         teamNo.setText(null);
-        attribute.setText(null);
     }
 
     private class MessageServer extends Thread {

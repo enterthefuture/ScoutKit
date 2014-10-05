@@ -1,3 +1,4 @@
+package org.scoutkit.scoutmaster;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
