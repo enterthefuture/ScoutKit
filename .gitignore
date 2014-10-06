@@ -1,5 +1,5 @@
 *.class
-scoutDB/
+build/
 derby.log
 derby.properties
 src/org/apache/

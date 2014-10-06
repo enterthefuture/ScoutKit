@@ -18,6 +18,7 @@ import java.sql.SQLException;
 
 
 import org.scoutkit.util.Message;
+import org.scoutkit.util.ScoutDerbyHelper;
 
 public class ScoutMaster extends JFrame {
 
