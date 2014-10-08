@@ -18,9 +18,19 @@ public class ScoutBox extends JFrame {
 
     private static final int EXIT_SUCCESS = 0;
     private static final int EXIT_FAILURE = 1;
+    private static int serverPort;
 
-    private int serverPort;
+    private static Properties prop;
 
+    private static String critAText = "A";
+    private static String critBText = "B";
+    private static String critCText = "C";
+    private static String critDText = "D";
+
+    private static String critAKey = "A";
+    private static String critBKey = "B";
+    private static String critCKey = "C";
+    private static String critDKey = "D";
     //private MessageServer mserver;
 
     private JTextArea outputBox;
@@ -34,10 +44,10 @@ public class ScoutBox extends JFrame {
     private JButton send;
     private JButton clear;
 
-    private JButton highGoal;
-    private JButton lowGoal;
-    private JButton barThrow;
-    private JButton barCatch;
+    private JButton critA;
+    private JButton critB;
+    private JButton critC;
+    private JButton critD;
 
     public ScoutBox(int serverPort) {
         super("ScoutBox: A FRC Scoring System");
@@ -61,25 +71,35 @@ public class ScoutBox extends JFrame {
             }
         };
 
-        highGoal = new JButton("High Goal");
-        highGoal.setMnemonic(KeyEvent.VK_1);
-        highGoal.setActionCommand("high");
-        highGoal.addActionListener(sendmsg);
+        critAText = (prop.containsKey("critAText")) ? prop.getProperty("critAText") : critAText;
+        critBText = (prop.containsKey("critBText")) ? prop.getProperty("critBText") : critBText;
+        critCText = (prop.containsKey("critCText")) ? prop.getProperty("critCText") : critCText;
+        critDText = (prop.containsKey("critDText")) ? prop.getProperty("critDText") : critDText;
 
-        lowGoal = new JButton("Low Goal");
-        lowGoal.setMnemonic(KeyEvent.VK_2);
-        lowGoal.setActionCommand("low");
-        lowGoal.addActionListener(sendmsg);
+        critAKey = (prop.containsKey("critAKey")) ? prop.getProperty("critAKey") : critAKey;
+        critBKey = (prop.containsKey("critBKey")) ? prop.getProperty("critBKey") : critBKey;
+        critCKey = (prop.containsKey("critCKey")) ? prop.getProperty("critCKey") : critCKey;
+        critDKey = (prop.containsKey("critDKey")) ? prop.getProperty("critDKey") : critDKey;
 
-        barThrow = new JButton("Truss Throw");
-        barThrow.setMnemonic(KeyEvent.VK_3);
-        barThrow.setActionCommand("throw");
-        barThrow.addActionListener(sendmsg);
+        critA = new JButton(critAText);
+        critA.setMnemonic(KeyEvent.VK_1);
+        critA.setActionCommand(critAKey);
+        critA.addActionListener(sendmsg);
 
-        barCatch = new JButton("Truss Catch");
-        barCatch.setMnemonic(KeyEvent.VK_4);
-        barCatch.setActionCommand("catch");
-        barCatch.addActionListener(sendmsg);
+        critB = new JButton(critBText);
+        critB.setMnemonic(KeyEvent.VK_2);
+        critB.setActionCommand(critBKey);
+        critB.addActionListener(sendmsg);
+
+        critC = new JButton(critCText);
+        critC.setMnemonic(KeyEvent.VK_3);
+        critC.setActionCommand(critCKey);
+        critC.addActionListener(sendmsg);
+
+        critD = new JButton(critDText);
+        critD.setMnemonic(KeyEvent.VK_4);
+        critD.setActionCommand(critDKey);
+        critD.addActionListener(sendmsg);
 
         send = new JButton("Send");
         send.setMnemonic(KeyEvent.VK_S);
@@ -208,16 +228,16 @@ public class ScoutBox extends JFrame {
         gbc.fill = GridBagConstraints.HORIZONTAL;
         gbc.gridy = row++;
         gbc.gridx = 0;
-        panel.add(lowGoal, gbc);
+        panel.add(critA, gbc);
         gbc.gridx = 1;
-        panel.add(highGoal, gbc);
+        panel.add(critB, gbc);
 
         gbc.fill = GridBagConstraints.HORIZONTAL;
         gbc.gridy = row++;
         gbc.gridx = 0;
-        panel.add(barThrow, gbc);
+        panel.add(critC, gbc);
         gbc.gridx = 1;
-        panel.add(barCatch, gbc);
+        panel.add(critD, gbc);
 
         return panel;
     }
@@ -231,7 +251,7 @@ public class ScoutBox extends JFrame {
             Message m = new Message(scoutID.getText(), Integer.parseInt(teamNo.getText()), Integer.parseInt(match.getText()), event, 1);
 
             output.writeObject(m);
-            
+
             output.flush();
             output.close();
 
@@ -286,6 +306,17 @@ public class ScoutBox extends JFrame {
     }
 
     public static void main(String[] args) {
-        (new ScoutBox((args.length == 0) ? ScoutBox.DEFAULT_SERVER_PORT : Integer.parseInt(args[0]))).runApp();
+        prop = new Properties();
+        ClassLoader loader = Thread.currentThread().getContextClassLoader();
+        InputStream stream = loader.getResourceAsStream("ScoutKit.properties");
+        try {
+            prop.load(stream);
+        } catch( IOException ex ) {
+            ex.printStackTrace();
+        }
+
+        int port = (prop.containsKey("port")) ? Integer.parseInt(prop.getProperty("port")) : ScoutBox.DEFAULT_SERVER_PORT;
+
+        new ScoutBox(port).runApp();
     }
 }

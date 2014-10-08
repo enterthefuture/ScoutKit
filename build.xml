@@ -41,6 +41,10 @@
         <copy todir="${classes.dir}/${derby.dir}">
             <fileset dir="${base.dir}/${derby.dir}" />
         </copy>
+        
+        <copy todir="${classes.dir}">
+            <fileset file="${base.dir}/ScoutKit.properties" />
+        </copy>
 
     </target>
 
@@ -48,14 +52,14 @@
         <mkdir dir="${jar.dir}"/>
         
         <!-- Make ScoutBox.jar -->
-        <jar destfile="${jar.dir}/${ant.project.name}-${box-name}.jar" basedir="${classes.dir}" includes="${scoutbox.class.dir}/**,${util.class.dir}/Message.class">
+        <jar destfile="${jar.dir}/${ant.project.name}-${box-name}.jar" basedir="${classes.dir}" includes="${scoutbox.class.dir}/**,${util.class.dir}/Message.class,ScoutKit.properties">
             <manifest>
                 <attribute name="Main-Class" value="${box-main-class}"/>
             </manifest>
         </jar>
         
         <!-- Make ScoutMaster.jar -->
-        <jar destfile="${jar.dir}/${ant.project.name}-${master-name}.jar" basedir="${classes.dir}" includes="${scoutmaster.class.dir}/**,${util.class.dir}/Message.class,${util.class.dir}/ScoutDerbyHelper.class,${derby.dir}/**"> 
+        <jar destfile="${jar.dir}/${ant.project.name}-${master-name}.jar" basedir="${classes.dir}" includes="${scoutmaster.class.dir}/**,${util.class.dir}/Message.class,${util.class.dir}/ScoutDerbyHelper.class,${derby.dir}/**,ScoutKit.properties"> 
             <manifest>
                 <attribute name="Main-Class" value="${master-main-class}"/>
             </manifest>

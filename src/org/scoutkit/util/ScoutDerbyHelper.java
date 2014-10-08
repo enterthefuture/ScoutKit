@@ -22,7 +22,7 @@ public class ScoutDerbyHelper {
     private static ArrayList<Statement> statements = new ArrayList<Statement>(); // list of Statements, PreparedStatements
     private static ResultSet rs = null;
     private static Statement s = null;
-    
+
     public static void main(String[] args) {
         ScoutDerbyHelper ss = new ScoutDerbyHelper("scoutDB");
 //        System.out.println("---Insert Entry---");
@@ -59,14 +59,13 @@ public class ScoutDerbyHelper {
 
             // We create a table...
             s.execute("create table " + tableName + "("
-                    + "id INTEGER NOT NULL GENERATED ALWAYS AS IDENTITY (START WITH 1, INCREMENT BY 1),"
                     + " team INTEGER NOT NULL,"
                     + " matchNo INTEGER NOT NULL,"
-                    + " high INTEGER NOT NULL,"
-                    + " low INTEGER NOT NULL,"
-                    + " catch INTEGER NOT NULL,"
-                    + " throw INTEGER NOT NULL,"
-                    + " CONSTRAINT primary_key PRIMARY KEY (id)"
+                    + " A INTEGER NOT NULL,"
+                    + " B INTEGER NOT NULL,"
+                    + " C INTEGER NOT NULL,"
+                    + " D INTEGER NOT NULL,"
+                    + " CONSTRAINT id PRIMARY KEY (team, matchNo)"
                     + ")");
             System.out.println("---Created table " + tableName + "---");
 
@@ -99,7 +98,7 @@ public class ScoutDerbyHelper {
             // insert statement: par 1 ID (bigint), par 2 team (int), par 3 match (int), par 4 critA (int), par 5 critB (int), par 6 critC (int), par 7 critD (int)
             psInsert = conn.prepareStatement(
                     "insert into " + tableName
-                    + "(team, matchNo, high, low, catch, throw)"
+                    + "(team, matchNo, A, B, C, D)"
                     + " values (?, ?, ?, ?, ?, ?)");
             statements.add(psInsert);
             int parNo = 1;
@@ -147,7 +146,7 @@ public class ScoutDerbyHelper {
             s = conn.createStatement(); // create statement
             statements.add(s);
 
-            rs = s.executeQuery("SELECT * FROM " + tableName + " ORDER BY id");
+            rs = s.executeQuery("SELECT * FROM " + tableName + " ORDER BY team");
             //printResults(rs);
 
         } catch (SQLException sqle) {
@@ -157,7 +156,7 @@ public class ScoutDerbyHelper {
 
         return rs;
     }
-    
+
        public static ResultSet printStats(String statstring) {
         boolean successful = true;
         try {
@@ -176,7 +175,7 @@ public class ScoutDerbyHelper {
 
         return rs;
     }
-   
+
     public static void openDB() {
         try {
             Properties props = new Properties(); // connection properties
@@ -210,7 +209,7 @@ public class ScoutDerbyHelper {
                     + ";create=true", props);
 
             System.out.println("Connected to and created database " + dbName);
-            
+
             s = conn.createStatement(); // create statement
             statements.add(s);
         } catch (SQLException sqle) {
@@ -219,7 +218,7 @@ public class ScoutDerbyHelper {
             e.printStackTrace();
         }
     }
-    
+
     public static void closeDB() {
         /*
          * In embedded mode, an application should shut down the database.
@@ -338,10 +337,10 @@ public class ScoutDerbyHelper {
         while (rs.next()) {
             int team = rs.getInt(rs.findColumn("team"));
             int matchNo = rs.getInt(rs.findColumn("matchNo"));
-            int critA = rs.getInt(rs.findColumn("high"));
-            int critB = rs.getInt(rs.findColumn("low"));
-            int critC = rs.getInt(rs.findColumn("catch"));
-            int critD = rs.getInt(rs.findColumn("throw"));
+            int critA = rs.getInt(rs.findColumn("A"));
+            int critB = rs.getInt(rs.findColumn("B"));
+            int critC = rs.getInt(rs.findColumn("C"));
+            int critD = rs.getInt(rs.findColumn("D"));
 
             System.out.println(
                     team + ":" + matchNo + ":" + critA + ":" + critB + ":" + critC + ":" + critD);

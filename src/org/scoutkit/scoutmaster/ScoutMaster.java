@@ -27,17 +27,24 @@ public class ScoutMaster extends JFrame {
     private static final int EXIT_SUCCESS = 0;
     private static final int EXIT_FAILURE = 1;
 
-    private static final String STAT_STRING = "SELECT team,COUNT(MATCHNO) AS ENTRIES ,\n" +
-                                        "AVG(CAST(HIGH AS FLOAT)) AS AVG_HIGH ,AVG(CAST(LOW AS FLOAT)) AS AVG_LOW,\n" +
-                                        "AVG(CAST(CATCH AS FLOAT)) AS AVG_CATCH ,AVG(CAST(THROW AS FLOAT)) AS AVG_THROW\n" +
+    private static Properties prop;
+
+    private static String critAKey = "A";
+    private static String critBKey = "B";
+    private static String critCKey = "C";
+    private static String critDKey = "D";
+
+    private static String statSQL = "SELECT team,COUNT(MATCHNO) AS ENTRIES ,\n" +
+                                        "AVG(CAST(A AS FLOAT)) AS AVG_A ,AVG(CAST(B AS FLOAT)) AS AVG_B,\n" +
+                                        "AVG(CAST(C AS FLOAT)) AS AVG_C ,AVG(CAST(D AS FLOAT)) AS AVG_D\n" +
                                         "FROM matches\n" +
                                         "GROUP BY team";
-    
+
     private int serverPort;
 
     private ScoutServer mserver;
     ScoutDerbyHelper dhelper;
-    
+
     private JTextArea outputBox;
     private JButton commit;
     private JButton clear;
@@ -65,7 +72,7 @@ public class ScoutMaster extends JFrame {
             return hash;
         }
     }
-    
+
     HashMap<MatchPair, HashMap<String, Integer>> stats
             = new HashMap<MatchPair, HashMap<String, Integer>>();
 
@@ -76,20 +83,27 @@ public class ScoutMaster extends JFrame {
         this.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
 
         mserver = new ScoutServer();
-        
+
+        statSQL = (prop.containsKey("statSQL")) ? prop.getProperty("statSQL") : critAKey;
+
+        critAKey = (prop.containsKey("critAKey")) ? prop.getProperty("critAKey") : critAKey;
+        critBKey = (prop.containsKey("critBKey")) ? prop.getProperty("critBKey") : critBKey;
+        critCKey = (prop.containsKey("critCKey")) ? prop.getProperty("critCKey") : critCKey;
+        critDKey = (prop.containsKey("critDKey")) ? prop.getProperty("critDKey") : critDKey;
+
         commit = new JButton("Commit");
         clear = new JButton("Clear");
-        
+
         dhelper = new ScoutDerbyHelper("scoutDB");
-        
+
         outputBox = new JTextArea();
         outputBox.setEditable(false);
         outputBox.setBorder(new BevelBorder(BevelBorder.RAISED));
         DefaultCaret caret = (DefaultCaret) outputBox.getCaret();
         caret.setUpdatePolicy(DefaultCaret.ALWAYS_UPDATE);
-        
+
         buildGUI();
-        
+
         commit.addActionListener(
                 new ActionListener() {
                     public void actionPerformed(ActionEvent e) {
@@ -97,7 +111,7 @@ public class ScoutMaster extends JFrame {
                     }
                 }
         );
-        
+
         clear.addActionListener(
                 new ActionListener() {
                     public void actionPerformed(ActionEvent e) {
@@ -107,7 +121,7 @@ public class ScoutMaster extends JFrame {
                     }
                 }
         );
-        
+
         this.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
         this.addWindowListener( new WindowAdapter() {
 
@@ -120,7 +134,7 @@ public class ScoutMaster extends JFrame {
                 }
             }
         });
-        
+
         setSize(650, 500);
 
         setVisible(true);
@@ -155,31 +169,6 @@ public class ScoutMaster extends JFrame {
         panel.add(clear, gbc);
         gbc.gridx = 1;
         panel.add(commit, gbc);
-        
-//        gbc.fill = GridBagConstraints.NONE;
-//        gbc.gridy = row++;
-//        gbc.gridx = 0;
-//        gbc.gridwidth = 2;
-//        gbc.anchor = GridBagConstraints.CENTER;
-//        panel.add(new JLabel("Database Configuration:"), gbc);
-//        gbc.gridwidth = 1;
-//
-//        gbc.fill = GridBagConstraints.HORIZONTAL;
-//        gbc.ipadx = 20;
-//        gbc.gridy = row++;
-//        gbc.gridx = 0;
-//        panel.add(new JLabel("Database Name:"), gbc);
-//        gbc.gridx = 1;
-//        panel.add(dbName, gbc);
-//
-//        gbc.fill = GridBagConstraints.NONE;
-//        gbc.gridy = row++;
-//        gbc.gridx = 0;
-//        gbc.gridwidth = 2;
-//        gbc.anchor = GridBagConstraints.CENTER;
-//        panel.add(commit, gbc);
-//        gbc.gridwidth = 1;
-//
         return panel;
     }
 
@@ -205,48 +194,48 @@ public class ScoutMaster extends JFrame {
     private JPanel getTextAreaPanel() {
         JPanel panel = new JPanel(new GridLayout(3,1));
         panel.add(new JScrollPane(outputBox));
-        
+
         // It creates and displays the table
         ResultSet rs = dhelper.printEntries();
         table = new JTable(buildTableModel(rs));
         table.setEnabled(false);
         panel.add(new JScrollPane(table));
 
-        ResultSet stats = dhelper.printStats(STAT_STRING);
+        ResultSet stats = dhelper.printStats(statSQL);
         stattable = new JTable(buildTableModel(stats));
         stattable.setEnabled(false);
         panel.add(new JScrollPane(stattable));
-        
+
         return panel;
     }
 
     private void commitStats() {
         MatchPair match = new MatchPair();
-        
+
         System.out.println("---Committing---");
         for(Map.Entry<MatchPair, HashMap<String, Integer>> entry : stats.entrySet()) {
             System.out.println(entry.getKey() + "/" + entry.getValue());
-            
+
             match = entry.getKey();
 
             HashMap<String, Integer> teamstats = entry.getValue();
-            int high = teamstats.get("high");
-            int low = teamstats.get("low");
-            int barThrow = teamstats.get("throw");
-            int barCatch = teamstats.get("catch");
+            int high = teamstats.get(critAKey);
+            int low = teamstats.get(critBKey);
+            int barThrow = teamstats.get(critCKey);
+            int barCatch = teamstats.get(critDKey);
             dhelper.insertEntry(match.team, match.match, high, low, barThrow, barCatch );
-            
+
             ResultSet rs = dhelper.printEntries();
             table.setModel(buildTableModel(rs));
-             
-            ResultSet stats = dhelper.printStats(STAT_STRING);
+
+            ResultSet stats = dhelper.printStats(statSQL);
             stattable.setModel(buildTableModel(stats));
         }
         stats =
           new HashMap<MatchPair, HashMap<String, Integer>>();
         outputBox.setText("");
     }
-    
+
     private class ScoutServer extends Thread {
 
         private ServerSocket server;
@@ -271,18 +260,18 @@ public class ScoutMaster extends JFrame {
                     client = server.accept();
                     Message event = (Message) (new ObjectInputStream(client.getInputStream())).readObject();
                     outputBox.append(event + "\n");
-                    
+
                     match.team = event.teamNo;
                     match.match = event.match;
-                    
+
                     if (stats.containsKey(match)) {
                         teamstats = stats.get(match);
                         //System.out.println("Team "+event.teamNo);
                     } else {
-                        teamstats.put("low", 0);
-                        teamstats.put("high", 0);
-                        teamstats.put("throw", 0);
-                        teamstats.put("catch", 0);
+                        teamstats.put(critBKey, 0);
+                        teamstats.put(critAKey, 0);
+                        teamstats.put(critCKey, 0);
+                        teamstats.put(critDKey, 0);
                         //System.out.println("New Team "+event.teamNo);
                     }
 
@@ -305,9 +294,20 @@ public class ScoutMaster extends JFrame {
     }
 
     public static void main(String[] args) {
-        (new ScoutMaster((args.length == 0) ? ScoutMaster.DEFAULT_SERVER_PORT : Integer.parseInt(args[0]))).runApp();
+        prop = new Properties();
+        ClassLoader loader = Thread.currentThread().getContextClassLoader();
+        InputStream stream = loader.getResourceAsStream("ScoutKit.properties");
+        try {
+            prop.load(stream);
+        } catch( IOException ex ) {
+            ex.printStackTrace();
+        }
+
+        int port = (prop.containsKey("port")) ? Integer.parseInt(prop.getProperty("port")) : ScoutMaster.DEFAULT_SERVER_PORT;
+
+        new ScoutMaster(port).runApp();
     }
-    
+
     public static DefaultTableModel buildTableModel(ResultSet rs) {
         try {
             ResultSetMetaData metaData = rs.getMetaData();
