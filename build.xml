@@ -2,46 +2,51 @@
 <project name="ScoutKit" basedir="." default="build">
 
     <property name="base.dir"     value="src"/>
-    <property name="scoutbox.src.dir"      value="${base.dir}/org/scoutkit/scoutbox"/>
-    <property name="scoutmaster.src.dir"      value="${base.dir}/org/scoutkit/scoutmaster"/>
+    <property name="src.dir"      value="${base.dir}/org/scoutkit"/>
+    <property name="scoutbox.src.dir"      value="${src.dir}/scoutbox"/>
+    <property name="scoutmaster.src.dir"      value="${src.dir}/scoutmaster"/>
+    <property name="scoutmaster.src.dir"      value="${src.dir}/scoutscore"/>
     <property name="util.src.dir"      value="${base.dir}/org/scoutkit/util"/>
-    
+
     <property name="build.dir"   value="build"/>
     <property name="classes.dir" value="${build.dir}/classes"/>
     <property name="jar.dir"     value="${build.dir}/jar"/>
 
-    
+
     <property name="scoutbox.class.dir"      value="org/scoutkit/scoutbox"/>
     <property name="scoutmaster.class.dir"      value="org/scoutkit/scoutmaster"/>
+    <property name="scoutscore.class.dir"      value="org/scoutkit/scoutscore"/>
+
     <property name="util.class.dir"      value="org/scoutkit/util"/>
     <property name="derby.dir"      value="org/apache/derby"/>
-    
+
     <property name="box-name"  value="ScoutBox"/>
     <property name="master-name"  value="ScoutMaster"/>
+    <property name="score-name"  value="ScoutScore"/>
+
     <property name="box-main-class"  value="org.scoutkit.scoutbox.ScoutBox"/>
     <property name="master-main-class"  value="org.scoutkit.scoutmaster.ScoutMaster"/>
-
+    <property name="score-main-class"  value="org.scoutkit.scoutscore.ScoutScore"/>
 
 
     <target name="clean">
         <delete dir="${build.dir}"/>
     </target>
 
-    <target name="compile">
-        <mkdir dir="${classes.dir}/${util.class.dir}"/>
-        <javac srcdir="${util.src.dir}" destdir="${classes.dir}"/>
-        
-        <mkdir dir="${classes.dir}/${scoutmaster.class.dir}"/>
-        <javac srcdir="${scoutmaster.src.dir}" destdir="${classes.dir}"/>
-        
-        <mkdir dir="${classes.dir}/${scoutbox.class.dir}"/>
-        <javac srcdir="${scoutbox.src.dir}" destdir="${classes.dir}"/>
-        
+    <target name="derby">
+        <!-- Copy Derby to Build Folder -->
         <mkdir dir="${classes.dir}/${derby.dir}"/>
         <copy todir="${classes.dir}/${derby.dir}">
             <fileset dir="${base.dir}/${derby.dir}" />
         </copy>
-        
+    </target>
+
+    <target name="compile">
+        <!-- Complile Project -->
+        <mkdir dir="${classes.dir}"/>
+        <javac srcdir="${src.dir}" destdir="${classes.dir}"/>
+
+        <!-- Copy Properties file to Build Folder -->
         <copy todir="${classes.dir}">
             <fileset file="${base.dir}/ScoutKit.properties" />
         </copy>
@@ -50,23 +55,29 @@
 
     <target name="jar" depends="compile">
         <mkdir dir="${jar.dir}"/>
-        
+
         <!-- Make ScoutBox.jar -->
         <jar destfile="${jar.dir}/${ant.project.name}-${box-name}.jar" basedir="${classes.dir}" includes="${scoutbox.class.dir}/**,${util.class.dir}/Message.class,ScoutKit.properties">
             <manifest>
                 <attribute name="Main-Class" value="${box-main-class}"/>
             </manifest>
         </jar>
-        
+
         <!-- Make ScoutMaster.jar -->
-        <jar destfile="${jar.dir}/${ant.project.name}-${master-name}.jar" basedir="${classes.dir}" includes="${scoutmaster.class.dir}/**,${util.class.dir}/Message.class,${util.class.dir}/ScoutDerbyHelper.class,${derby.dir}/**,ScoutKit.properties"> 
+        <jar destfile="${jar.dir}/${ant.project.name}-${master-name}.jar" basedir="${classes.dir}" includes="${scoutmaster.class.dir}/**,${util.class.dir}/Message.class,${util.class.dir}/ScoutDerbyHelper.class,${derby.dir}/**,ScoutKit.properties">
             <manifest>
                 <attribute name="Main-Class" value="${master-main-class}"/>
+            </manifest>
+        </jar>
+        <!-- Make ScoutScore.jar -->
+        <jar destfile="${jar.dir}/${ant.project.name}-${score-name}.jar" basedir="${classes.dir}" includes="${scoutscore.class.dir}/**,${util.class.dir}/ScoutDerbyHelper.class,${derby.dir}/**,ScoutKit.properties">
+            <manifest>
+                <attribute name="Main-Class" value="${score-main-class}"/>
             </manifest>
         </jar>
     </target>
 
 
-    <target name="build" depends="clean,jar"/>
+    <target name="build" depends="clean,derby,jar"/>
 
 </project>

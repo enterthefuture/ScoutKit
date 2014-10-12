@@ -77,14 +77,13 @@ public class ScoutMaster extends JFrame {
             = new HashMap<MatchPair, HashMap<String, Integer>>();
 
     public ScoutMaster(int serverPort) {
-        super("ScoutMaster: FRC Scout Data Manager");
+        super("ScoutMaster: FRC Scouter Manager");
 
         this.serverPort = serverPort;
-        this.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
 
         mserver = new ScoutServer();
 
-        statSQL = (prop.containsKey("statSQL")) ? prop.getProperty("statSQL") : critAKey;
+        statSQL = (prop.containsKey("statSQL")) ? prop.getProperty("statSQL") : statSQL;
 
         critAKey = (prop.containsKey("critAKey")) ? prop.getProperty("critAKey") : critAKey;
         critBKey = (prop.containsKey("critBKey")) ? prop.getProperty("critBKey") : critBKey;
@@ -121,19 +120,19 @@ public class ScoutMaster extends JFrame {
                     }
                 }
         );
-
-        this.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
-        this.addWindowListener( new WindowAdapter() {
-
-            @Override
-            public void windowClosing(WindowEvent e) {
-                int confirm = JOptionPane.showOptionDialog(null, "Are You Sure to Close Application?", "Exit Confirmation", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE, null, null, null);
-                if (confirm == 0) {
-                    dhelper.closeDB();
-                   System.exit(EXIT_SUCCESS);
-                }
-            }
-        });
+        //
+        // this.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
+        // this.addWindowListener( new WindowAdapter() {
+        //
+        //     @Override
+        //     public void windowClosing(WindowEvent e) {
+        //         int confirm = JOptionPane.showOptionDialog(null, "Are You Sure to Close Application?", "Exit Confirmation", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE, null, null, null);
+        //         if (confirm == 0) {
+        //             dhelper.closeDB();
+        //            System.exit(EXIT_SUCCESS);
+        //         }
+        //     }
+        // });
 
         setSize(650, 500);
 
@@ -180,7 +179,7 @@ public class ScoutMaster extends JFrame {
         exit.addActionListener(
                 new ActionListener() {
                     public void actionPerformed(ActionEvent e) {
-                        dhelper.closeDB();
+                        // dhelper.closeDB();
                         System.exit(EXIT_SUCCESS);
                     }
                 }
@@ -192,6 +191,7 @@ public class ScoutMaster extends JFrame {
     }
 
     private JPanel getTextAreaPanel() {
+        dhelper.openDB();
         JPanel panel = new JPanel(new GridLayout(3,1));
         panel.add(new JScrollPane(outputBox));
 
@@ -201,15 +201,17 @@ public class ScoutMaster extends JFrame {
         table.setEnabled(false);
         panel.add(new JScrollPane(table));
 
-        ResultSet stats = dhelper.printStats(statSQL);
-        stattable = new JTable(buildTableModel(stats));
+        ResultSet statrs = dhelper.printStats(statSQL);
+        stattable = new JTable(buildTableModel(statrs));
         stattable.setEnabled(false);
         panel.add(new JScrollPane(stattable));
 
+        dhelper.closeDB();
         return panel;
     }
 
     private void commitStats() {
+        dhelper.openDB();
         MatchPair match = new MatchPair();
 
         System.out.println("---Committing---");
@@ -224,16 +226,17 @@ public class ScoutMaster extends JFrame {
             int barThrow = teamstats.get(critCKey);
             int barCatch = teamstats.get(critDKey);
             dhelper.insertEntry(match.team, match.match, high, low, barThrow, barCatch );
-
-            ResultSet rs = dhelper.printEntries();
-            table.setModel(buildTableModel(rs));
-
-            ResultSet stats = dhelper.printStats(statSQL);
-            stattable.setModel(buildTableModel(stats));
         }
+
+        ResultSet rs = dhelper.printEntries();
+        table.setModel(buildTableModel(rs));
+
+        ResultSet statrs = dhelper.printStats(statSQL);
+        stattable.setModel(buildTableModel(statrs));
         stats =
           new HashMap<MatchPair, HashMap<String, Integer>>();
         outputBox.setText("");
+        dhelper.closeDB();
     }
 
     private class ScoutServer extends Thread {
@@ -279,7 +282,7 @@ public class ScoutMaster extends JFrame {
                     teamstats.put(event.attribute, oldstat + event.value);
                     stats.put(match, teamstats);
 
-                    outputBox.append(stats.toString() + "\n\n");
+                    // outputBox.append(stats.toString() + "\n\n");
 
                     client.close();
                 } catch (Exception e) {

@@ -50,7 +50,7 @@ public class ScoutBox extends JFrame {
     private JButton critD;
 
     public ScoutBox(int serverPort) {
-        super("ScoutBox: A FRC Scoring System");
+        super("ScoutBox: A FRC Scouting System");
 
         this.serverPort = serverPort;
 

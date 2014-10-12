@@ -17,6 +17,7 @@ public class ScoutDerbyHelper {
     private static String protocol = "jdbc:derby:";
     private static String dbName;
     private static String tableName;
+    private static String lasterror = "";
 
     private static Connection conn = null;
     private static ArrayList<Statement> statements = new ArrayList<Statement>(); // list of Statements, PreparedStatements
@@ -45,11 +46,14 @@ public class ScoutDerbyHelper {
         this.tableName = tableName;
         openDB();
         makeTables();
+        closeDB();
     }
 
     private static boolean makeTables() {
         boolean successful = true;
         try {
+            System.out.println("Connected to database " + dbName);
+
             // We want to control transactions manually. Autocommit is on by
             // default in JDBC.
             // conn.setAutoCommit(false);
@@ -61,10 +65,10 @@ public class ScoutDerbyHelper {
             s.execute("create table " + tableName + "("
                     + " team INTEGER NOT NULL,"
                     + " matchNo INTEGER NOT NULL,"
-                    + " A INTEGER NOT NULL,"
-                    + " B INTEGER NOT NULL,"
-                    + " C INTEGER NOT NULL,"
-                    + " D INTEGER NOT NULL,"
+                    + " A FLOAT NOT NULL,"
+                    + " B FLOAT NOT NULL,"
+                    + " C FLOAT NOT NULL,"
+                    + " D FLOAT NOT NULL,"
                     + " CONSTRAINT id PRIMARY KEY (team, matchNo)"
                     + ")");
             System.out.println("---Created table " + tableName + "---");
@@ -94,7 +98,7 @@ public class ScoutDerbyHelper {
         boolean successful = true;
         PreparedStatement psInsert;
         try {
-
+            System.out.println("Connected to database " + dbName);
             // insert statement: par 1 ID (bigint), par 2 team (int), par 3 match (int), par 4 critA (int), par 5 critB (int), par 6 critC (int), par 7 critD (int)
             psInsert = conn.prepareStatement(
                     "insert into " + tableName
@@ -151,7 +155,7 @@ public class ScoutDerbyHelper {
 
         } catch (SQLException sqle) {
             printSQLException(sqle);
-            successful = false;
+            return null;
         }
 
         return rs;
@@ -171,6 +175,7 @@ public class ScoutDerbyHelper {
         } catch (SQLException sqle) {
             printSQLException(sqle);
             successful = false;
+            return null;
         }
 
         return rs;
@@ -207,8 +212,6 @@ public class ScoutDerbyHelper {
 			Class.forName("org.apache.derby.jdbc.EmbeddedDriver").newInstance();
             conn = DriverManager.getConnection(protocol + dbName
                     + ";create=true", props);
-
-            System.out.println("Connected to and created database " + dbName);
 
             s = conn.createStatement(); // create statement
             statements.add(s);
@@ -329,8 +332,13 @@ public class ScoutDerbyHelper {
             System.err.println("  Message:    " + e.getMessage());
             // for stack traces, refer to derby.log or uncomment this:
             //e.printStackTrace(System.err);
+            lasterror = e.getMessage();
             e = e.getNextException();
         }
+    }
+
+    public static String getLastError() {
+      return lasterror;
     }
 
     public static void printResults(ResultSet rs) throws SQLException {
