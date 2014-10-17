@@ -46,8 +46,13 @@ public class ScoutMaster extends JFrame {
     ScoutDerbyHelper dhelper;
 
     private JTextArea outputBox;
+    private JTextArea sqlBox;
+	
     private JButton commit;
     private JButton clear;
+    private JButton update;
+    private JButton reset;
+	
     private JTable table;
     private JTable stattable;
 
@@ -92,6 +97,8 @@ public class ScoutMaster extends JFrame {
 
         commit = new JButton("Commit");
         clear = new JButton("Clear");
+        update = new JButton("Update");
+        reset = new JButton("Reset");
 
         dhelper = new ScoutDerbyHelper("scoutDB");
 
@@ -101,15 +108,20 @@ public class ScoutMaster extends JFrame {
         DefaultCaret caret = (DefaultCaret) outputBox.getCaret();
         caret.setUpdatePolicy(DefaultCaret.ALWAYS_UPDATE);
 
+        sqlBox = new JTextArea(statSQL);
+        sqlBox.setBorder(new BevelBorder(BevelBorder.RAISED));
+        sqlBox.setLineWrap(true);
+
         buildGUI();
 
         commit.addActionListener(
                 new ActionListener() {
                     public void actionPerformed(ActionEvent e) {
                         commitStats();
+						updateStats();
                     }
                 }
-        );
+			);
 
         clear.addActionListener(
                 new ActionListener() {
@@ -119,20 +131,36 @@ public class ScoutMaster extends JFrame {
                         outputBox.setText("");
                     }
                 }
-        );
-        //
-        // this.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
-        // this.addWindowListener( new WindowAdapter() {
-        //
-        //     @Override
-        //     public void windowClosing(WindowEvent e) {
-        //         int confirm = JOptionPane.showOptionDialog(null, "Are You Sure to Close Application?", "Exit Confirmation", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE, null, null, null);
-        //         if (confirm == 0) {
-        //             dhelper.closeDB();
-        //            System.exit(EXIT_SUCCESS);
-        //         }
-        //     }
-        // });
+			);
+		
+		update.addActionListener(
+                new ActionListener() {
+                    public void actionPerformed(ActionEvent e) {
+                        updateStats();
+                    }
+                }
+			);
+
+        reset.addActionListener(
+                new ActionListener() {
+                    public void actionPerformed(ActionEvent e) {
+                        sqlBox.setText(statSQL);
+                        updateStats();
+                    }
+                }
+			);
+		
+		this.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
+		this.addWindowListener( new WindowAdapter() {
+		
+		    @Override
+		    public void windowClosing(WindowEvent e) {
+		        int confirm = JOptionPane.showOptionDialog(null, "Are You Sure to Close Application?", "Exit Confirmation", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE, null, null, null);
+		        if (confirm == 0) {
+		           System.exit(EXIT_SUCCESS);
+		        }
+		    }
+		});
 
         setSize(650, 500);
 
@@ -148,14 +176,48 @@ public class ScoutMaster extends JFrame {
 
         Container c = getContentPane();
 
-        c.setLayout(new BorderLayout());
+        c.setLayout(new GridLayout(2,1));
 
-        c.add(getTextAreaPanel(), BorderLayout.CENTER);
+        c.add(getEventPanel());
 
-        c.add(getMainPanel(), BorderLayout.SOUTH);
+        c.add(getStatPanel());
+    }
+	
+	private JPanel getEventPanel() {
+        dhelper.openDB();
+        JPanel panel = new JPanel(new GridLayout(3,1));
+        panel.add(new JScrollPane(outputBox));
+
+        // It creates and displays the table
+        ResultSet rs = dhelper.printEntries();
+        table = new JTable(buildTableModel(rs));
+        table.setEnabled(false);
+        panel.add(new JScrollPane(table));
+
+		panel.add(getEventControlPanel());
+		
+        dhelper.closeDB();
+        return panel;
+    }
+	
+    private JPanel getStatPanel() {
+        dhelper.openDB();
+        JPanel panel = new JPanel(new GridLayout(3,1));
+        panel.add(new JScrollPane(sqlBox));
+
+        // It creates and displays the table
+        ResultSet statrs = dhelper.printStats(sqlBox.getText());
+        stattable = new JTable(buildTableModel(statrs));
+        stattable.setEnabled(false);
+        panel.add(new JScrollPane(stattable));
+		
+		panel.add(getStatControlPanel());
+		
+        dhelper.closeDB();
+        return panel;
     }
 
-    private JPanel getMainPanel() {
+    private JPanel getEventControlPanel() {
         JPanel panel = new JPanel(new GridBagLayout());
         int row = 0;
         panel.setSize(650, 100);
@@ -170,7 +232,23 @@ public class ScoutMaster extends JFrame {
         panel.add(commit, gbc);
         return panel;
     }
+	
+    private JPanel getStatControlPanel() {
+        JPanel panel = new JPanel(new GridBagLayout());
+        int row = 0;
+        panel.setSize(650, 100);
 
+        GridBagConstraints gbc = new GridBagConstraints();
+
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.gridy = row++;
+        gbc.gridx = 0;
+        panel.add(reset, gbc);
+        gbc.gridx = 1;
+        panel.add(update, gbc);
+        return panel;
+    }
+	
     private JMenu getMainMenu() {
         JMenu menu = new JMenu("File");
 
@@ -189,27 +267,18 @@ public class ScoutMaster extends JFrame {
 
         return menu;
     }
-
-    private JPanel getTextAreaPanel() {
+	
+    private void updateStats() {
         dhelper.openDB();
-        JPanel panel = new JPanel(new GridLayout(3,1));
-        panel.add(new JScrollPane(outputBox));
-
-        // It creates and displays the table
-        ResultSet rs = dhelper.printEntries();
-        table = new JTable(buildTableModel(rs));
-        table.setEnabled(false);
-        panel.add(new JScrollPane(table));
-
-        ResultSet statrs = dhelper.printStats(statSQL);
-        stattable = new JTable(buildTableModel(statrs));
-        stattable.setEnabled(false);
-        panel.add(new JScrollPane(stattable));
-
+        ResultSet statrs = dhelper.printStats(sqlBox.getText());
+        if(stats != null){
+          stattable.setModel(buildTableModel(statrs));
+        } else {
+          JOptionPane.showMessageDialog(this, dhelper.getLastError(), "SQL Error", JOptionPane.WARNING_MESSAGE);
+        }
         dhelper.closeDB();
-        return panel;
     }
-
+	
     private void commitStats() {
         dhelper.openDB();
         MatchPair match = new MatchPair();
@@ -231,8 +300,6 @@ public class ScoutMaster extends JFrame {
         ResultSet rs = dhelper.printEntries();
         table.setModel(buildTableModel(rs));
 
-        ResultSet statrs = dhelper.printStats(statSQL);
-        stattable.setModel(buildTableModel(statrs));
         stats =
           new HashMap<MatchPair, HashMap<String, Integer>>();
         outputBox.setText("");

@@ -57,7 +57,7 @@ public class ScoutBox extends JFrame {
         //mserver = new MessageServer();
 
         host = new JTextField("127.0.0.1", 15);
-        port = new JTextField(Integer.toString(DEFAULT_SERVER_PORT), 5);
+        port = new JTextField(Integer.toString(serverPort), 5);
         scoutID = new JTextField(10);
         teamNo = new JTextField(5);
         match = new JTextField(5);
@@ -315,8 +315,8 @@ public class ScoutBox extends JFrame {
             ex.printStackTrace();
         }
 
-        int port = (prop.containsKey("port")) ? Integer.parseInt(prop.getProperty("port")) : ScoutBox.DEFAULT_SERVER_PORT;
 
+        int port = (prop.containsKey("port")) ? Integer.parseInt(prop.getProperty("port")) : ScoutBox.DEFAULT_SERVER_PORT;
         new ScoutBox(port).runApp();
     }
 }
