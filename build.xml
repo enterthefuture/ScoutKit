@@ -33,14 +33,6 @@
         <delete dir="${build.dir}"/>
     </target>
 
-    <target name="derby">
-        <!-- Copy Derby to Build Folder -->
-        <mkdir dir="${classes.dir}/${derby.dir}"/>
-        <copy todir="${classes.dir}/${derby.dir}">
-            <fileset dir="${base.dir}/${derby.dir}" />
-        </copy>
-    </target>
-
     <target name="compile">
         <!-- Complile Project -->
         <mkdir dir="${classes.dir}"/>
@@ -64,7 +56,8 @@
         </jar>
 
         <!-- Make ScoutMaster.jar -->
-        <jar destfile="${jar.dir}/${ant.project.name}-${master-name}.jar" basedir="${classes.dir}" includes="${scoutmaster.class.dir}/**,${util.class.dir}/Message.class,${util.class.dir}/ScoutDerbyHelper.class,${derby.dir}/**,ScoutKit.properties">
+        <jar destfile="${jar.dir}/${ant.project.name}-${master-name}.jar" basedir="${classes.dir}" includes="${scoutmaster.class.dir}/**,${util.class.dir}/Message.class,${util.class.dir}/ScoutDerbyHelper.class,ScoutKit.properties">
+            <zipgroupfileset dir="lib" includes="derby.jar" />
             <manifest>
                 <attribute name="Main-Class" value="${master-main-class}"/>
             </manifest>
@@ -77,7 +70,7 @@
         </jar>
     </target>
 
-
-    <target name="build" depends="clean,derby,jar"/>
-
+    
+    <target name="build" depends="clean,jar"/>
+    
 </project>
