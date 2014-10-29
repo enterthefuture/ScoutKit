@@ -40,14 +40,17 @@ public class ScoutBox extends JFrame {
     private JTextField scoutID;
     private JTextField teamNo;
     private JTextField match;
+    private JTextField comment;
 
     private JButton send;
+    private JButton sendComment;
     private JButton clear;
 
     private JButton critA;
     private JButton critB;
     private JButton critC;
     private JButton critD;
+
 
     public ScoutBox(int serverPort) {
         super("ScoutBox: A FRC Scouting System");
@@ -61,13 +64,14 @@ public class ScoutBox extends JFrame {
         scoutID = new JTextField(10);
         teamNo = new JTextField(5);
         match = new JTextField(5);
+        comment = new JTextField(15);
 
         outputBox = new JTextArea();
         outputBox.setEditable(false);
 
         ActionListener sendmsg = new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                sendMessage(e.getActionCommand());
+                sendUp(e.getActionCommand());
             }
         };
 
@@ -81,31 +85,36 @@ public class ScoutBox extends JFrame {
         critCKey = (prop.containsKey("critCKey")) ? prop.getProperty("critCKey") : critCKey;
         critDKey = (prop.containsKey("critDKey")) ? prop.getProperty("critDKey") : critDKey;
 
-        critA = new JButton(critAText);
+        critA = new JButton("1. "+critAText);
         critA.setMnemonic(KeyEvent.VK_1);
-        critA.setActionCommand(critAKey);
+        critA.setActionCommand("0");
         critA.addActionListener(sendmsg);
 
-        critB = new JButton(critBText);
+        critB = new JButton("2. "+critBText);
         critB.setMnemonic(KeyEvent.VK_2);
-        critB.setActionCommand(critBKey);
+        critB.setActionCommand("1");
         critB.addActionListener(sendmsg);
 
-        critC = new JButton(critCText);
+        critC = new JButton("3. "+critCText);
         critC.setMnemonic(KeyEvent.VK_3);
-        critC.setActionCommand(critCKey);
+        critC.setActionCommand("2");
         critC.addActionListener(sendmsg);
 
-        critD = new JButton(critDText);
+        critD = new JButton("4. "+critDText);
         critD.setMnemonic(KeyEvent.VK_4);
-        critD.setActionCommand(critDKey);
+        critD.setActionCommand("3");
         critD.addActionListener(sendmsg);
 
         send = new JButton("Send");
         send.setMnemonic(KeyEvent.VK_S);
 
         clear = new JButton("Clear");
-        clear.setMnemonic(KeyEvent.VK_C);
+        clear.setMnemonic(KeyEvent.VK_L);
+
+        sendComment = new JButton("Send Comment");
+        sendComment.setMnemonic(KeyEvent.VK_C);
+        sendComment.setActionCommand("comment");
+        sendComment.addActionListener(sendmsg);
 
         outputBox.setBorder(new BevelBorder(BevelBorder.RAISED));
 
@@ -239,16 +248,34 @@ public class ScoutBox extends JFrame {
         gbc.gridx = 1;
         panel.add(critD, gbc);
 
+        gbc.fill = GridBagConstraints.NONE;
+        gbc.gridy = row++;
+        gbc.gridx = 0;
+        gbc.gridwidth = 2;
+        gbc.anchor = GridBagConstraints.CENTER;
+        panel.add(new JLabel("Comment:"), gbc);
+        gbc.gridwidth = 1;
+
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.gridy = row++;
+        gbc.gridx = 0;
+        panel.add(comment, gbc);
+        gbc.gridx = 1;
+        panel.add(sendComment, gbc);
         return panel;
     }
 
-    private void sendMessage(String event) {
+    private void sendUp(String stat) {
         try {
             Socket remoteHost = new Socket(host.getText(), Integer.parseInt(port.getText()));
 
             ObjectOutputStream output = new ObjectOutputStream(remoteHost.getOutputStream());
-
-            Message m = new Message(scoutID.getText(), Integer.parseInt(teamNo.getText()), Integer.parseInt(match.getText()), event, 1);
+            Message m;
+            if(stat == "comment") {
+              m = new Message(scoutID.getText(), Integer.parseInt(teamNo.getText()), Integer.parseInt(match.getText()), stat, comment.getText());
+            } else {
+              m = new Message(scoutID.getText(), Integer.parseInt(teamNo.getText()), Integer.parseInt(match.getText()), stat, "1");
+            }
 
             output.writeObject(m);
 
@@ -262,6 +289,7 @@ public class ScoutBox extends JFrame {
             System.err.println(e);
         }
     }
+
 
     private void clearFields() {
         teamNo.setText(null);

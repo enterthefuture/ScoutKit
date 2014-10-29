@@ -101,9 +101,9 @@ public class ScoutDerbyHelper {
             System.out.println("Connected to database " + dbName);
             // insert statement: par 1 ID (bigint), par 2 team (int), par 3 match (int), par 4 critA (int), par 5 critB (int), par 6 critC (int), par 7 critD (int)
             psInsert = conn.prepareStatement(
-                    "insert into " + tableName
+                    "INSERT INTO " + tableName
                     + "(team, matchNo, A, B, C, D)"
-                    + " values (?, ?, ?, ?, ?, ?)");
+                    + " VALUES (?, ?, ?, ?, ?, ?)");
             statements.add(psInsert);
             int parNo = 1;
             psInsert.setInt(parNo++, team); // par 2 - team
@@ -115,6 +115,64 @@ public class ScoutDerbyHelper {
             psInsert.executeUpdate();
             parNo = 0;
             System.out.println("---Inserted: " + team + ":" + matchNo + ":" + critA + ":" + critB + ":" + critC + ":" + critD + "---");
+
+            /*
+             * In embedded mode, an application should shut down the database.
+             * If the application fails to shut down the database,
+             * Derby will not perform a checkpoint when the JVM shuts down.
+             * This means that it will take longer to boot (connect to) the
+             * database the next time, because Derby needs to perform a recovery
+             * operation.
+             *
+             * It is also possible to shut down the Derby system/engine, which
+             * automatically shuts down all booted databases.
+             *
+             * Explicitly shutting down the database or the Derby engine with
+             * the connection URL is preferred. This style of shutdown will
+             * always throw an SQLException.
+             *
+             * Not shutting down when in a client environment, see method
+             * Javadoc.
+             */
+
+        } catch (SQLException sqle) {
+            if (((sqle.getErrorCode() == 30000)
+                    && ("23505".equals(sqle.getSQLState())))) {
+                // we got the expected exception
+                // Note that for single database shutdown, the expected
+                // SQL state is "08006", and the error code is 45000.
+                updateEntry(team, matchNo, critA, critB, critC, critD);
+            } else {
+                // if the error code or SQLState is different, we have
+                // an unexpected exception (shutdown failed)
+                printSQLException(sqle);
+                successful = false;
+            }
+        }
+        return successful;
+    }
+
+    public static boolean updateEntry(int team, int matchNo, int critA, int critB, int critC, int critD) {
+        boolean successful = true;
+        PreparedStatement psInsert;
+        try {
+            //System.out.println("Connected to database " + dbName);
+            // insert statement: par 1 ID (bigint), par 2 team (int), par 3 match (int), par 4 critA (int), par 5 critB (int), par 6 critC (int), par 7 critD (int)
+            psInsert = conn.prepareStatement(
+                    "UPDATE " + tableName + " SET \n"
+                    + "A = ?, B = ?, C = ?, D = ? \n"
+                    + " WHERE team = ? AND matchNo = ?");
+            statements.add(psInsert);
+            int parNo = 1;
+            psInsert.setInt(parNo++, critA); // par 3 - critA
+            psInsert.setInt(parNo++, critB); // par 4 - critB
+            psInsert.setInt(parNo++, critC); // par 5 - critC
+            psInsert.setInt(parNo++, critD); // par 6 - critD
+            psInsert.setInt(parNo++, team); // par 7 - team
+            psInsert.setInt(parNo++, matchNo); // par 8 - match
+            psInsert.executeUpdate();
+            parNo = 0;
+            System.out.println("---Updated: " + team + ":" + matchNo + ":" + critA + ":" + critB + ":" + critC + ":" + critD + "---");
 
             /*
              * In embedded mode, an application should shut down the database.
@@ -150,6 +208,8 @@ public class ScoutDerbyHelper {
             s = conn.createStatement(); // create statement
             statements.add(s);
 
+            System.out.println("---Updating Entries---");
+
             rs = s.executeQuery("SELECT * FROM " + tableName + " ORDER BY team");
             //printResults(rs);
 
@@ -168,6 +228,8 @@ public class ScoutDerbyHelper {
 
             s = conn.createStatement(); // create statement
             statements.add(s);
+
+            System.out.println("---Updating Statistics---");
 
             rs = s.executeQuery(statstring);
             //printResults(rs);
@@ -254,7 +316,7 @@ public class ScoutDerbyHelper {
                 if (((se.getErrorCode() == 45000)
                         && ("08006".equals(se.getSQLState())))) {
                     // we got the expected exception
-                    System.out.println("Derby shut down normally");
+                    //System.out.println("Derby shut down normally");
                     // Note that for single database shutdown, the expected
                     // SQL state is "08006", and the error code is 45000.
                 } else {
@@ -273,7 +335,7 @@ public class ScoutDerbyHelper {
                 rs.close();
                 rs = null;
             }
-            System.err.println("Cleaned ResultSet");
+            //System.err.println("Cleaned ResultSet");
         } catch (SQLException sqle) {
             printSQLException(sqle);
         }
@@ -290,7 +352,7 @@ public class ScoutDerbyHelper {
                 }
             } catch (SQLException sqle) {
                 printSQLException(sqle);
-                System.err.println("Did not clean Statements");
+                //System.err.println("Did not clean Statements");
             }
         }
 
