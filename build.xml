@@ -3,9 +3,6 @@
 
     <property name="base.dir"     value="src"/>
     <property name="src.dir"      value="${base.dir}/org/scoutkit"/>
-    <property name="scoutbox.src.dir"      value="${src.dir}/scoutbox"/>
-    <property name="scoutmaster.src.dir"      value="${src.dir}/scoutmaster"/>
-    <property name="util.src.dir"      value="${base.dir}/org/scoutkit/util"/>
 
     <property name="build.dir"   value="build"/>
     <property name="classes.dir" value="${build.dir}/classes"/>
@@ -16,7 +13,6 @@
     <property name="scoutmaster.class.dir"      value="org/scoutkit/scoutmaster"/>
 
     <property name="util.class.dir"      value="org/scoutkit/util"/>
-    <property name="derby.dir"      value="org/apache/derby"/>
 
     <property name="box-name"  value="ScoutBox"/>
     <property name="master-name"  value="ScoutMaster"/>
@@ -24,11 +20,12 @@
     <property name="box-main-class"  value="org.scoutkit.scoutbox.ScoutBox"/>
     <property name="master-main-class"  value="org.scoutkit.scoutmaster.ScoutMaster"/>
 
-
+    <!-- Delete Old Build Dir -->
     <target name="clean">
         <delete dir="${build.dir}"/>
     </target>
 
+    <!-- Compliling and Building -->
     <target name="compile">
         <!-- Complile Project -->
         <mkdir dir="${classes.dir}"/>
@@ -41,6 +38,7 @@
 
     </target>
 
+    <!-- Package it all into nice jars -->
     <target name="jar" depends="compile">
         <mkdir dir="${jar.dir}"/>
 
@@ -60,7 +58,7 @@
         </jar>
     </target>
 
-    
+    <!-- Default target. Deletes old build, builds new jars -->
     <target name="build" depends="clean,jar"/>
-    
+
 </project>
