@@ -69,6 +69,7 @@ public class ScoutDerbyHelper {
                     + " B FLOAT NOT NULL,"
                     + " C FLOAT NOT NULL,"
                     + " D FLOAT NOT NULL,"
+                    + " COM VARCHAR(255),"
                     + " CONSTRAINT id PRIMARY KEY (team, matchNo)"
                     + ")");
             System.out.println("---Created table " + tableName + "---");
@@ -94,7 +95,7 @@ public class ScoutDerbyHelper {
         return successful;
     }
 
-    public static boolean insertEntry(int team, int matchNo, int critA, int critB, int critC, int critD) {
+    public static boolean insertEntry(int team, int matchNo, int critA, int critB, int critC, int critD, String comment) {
         boolean successful = true;
         PreparedStatement psInsert;
         try {
@@ -102,8 +103,8 @@ public class ScoutDerbyHelper {
             // insert statement: par 1 ID (bigint), par 2 team (int), par 3 match (int), par 4 critA (int), par 5 critB (int), par 6 critC (int), par 7 critD (int)
             psInsert = conn.prepareStatement(
                     "INSERT INTO " + tableName
-                    + "(team, matchNo, A, B, C, D)"
-                    + " VALUES (?, ?, ?, ?, ?, ?)");
+                    + "(team, matchNo, A, B, C, D, COM)"
+                    + " VALUES (?, ?, ?, ?, ?, ?, ?)");
             statements.add(psInsert);
             int parNo = 1;
             psInsert.setInt(parNo++, team); // par 2 - team
@@ -112,9 +113,10 @@ public class ScoutDerbyHelper {
             psInsert.setInt(parNo++, critB); // par 5 - critB
             psInsert.setInt(parNo++, critC); // par 6 - critC
             psInsert.setInt(parNo++, critD); // par 7 - critD
+            psInsert.setString(parNo++, comment); // par 8 - comment
             psInsert.executeUpdate();
             parNo = 0;
-            System.out.println("---Inserted: " + team + ":" + matchNo + ":" + critA + ":" + critB + ":" + critC + ":" + critD + "---");
+            System.out.println("---Inserted: " + team + ":" + matchNo + ":" + critA + ":" + critB + ":" + critC + ":" + critD + ":" + comment + "---");
 
             /*
              * In embedded mode, an application should shut down the database.
@@ -141,7 +143,7 @@ public class ScoutDerbyHelper {
                 // we got the expected exception
                 // Note that for single database shutdown, the expected
                 // SQL state is "08006", and the error code is 45000.
-                updateEntry(team, matchNo, critA, critB, critC, critD);
+                updateEntry(team, matchNo, critA, critB, critC, critD, comment);
             } else {
                 // if the error code or SQLState is different, we have
                 // an unexpected exception (shutdown failed)
@@ -152,7 +154,7 @@ public class ScoutDerbyHelper {
         return successful;
     }
 
-    public static boolean updateEntry(int team, int matchNo, int critA, int critB, int critC, int critD) {
+    public static boolean updateEntry(int team, int matchNo, int critA, int critB, int critC, int critD, String comment) {
         boolean successful = true;
         PreparedStatement psInsert;
         try {
@@ -160,7 +162,7 @@ public class ScoutDerbyHelper {
             // insert statement: par 1 ID (bigint), par 2 team (int), par 3 match (int), par 4 critA (int), par 5 critB (int), par 6 critC (int), par 7 critD (int)
             psInsert = conn.prepareStatement(
                     "UPDATE " + tableName + " SET \n"
-                    + "A = ?, B = ?, C = ?, D = ? \n"
+                    + "A = ?, B = ?, C = ?, D = ?, COM=? \n"
                     + " WHERE team = ? AND matchNo = ?");
             statements.add(psInsert);
             int parNo = 1;
@@ -168,11 +170,12 @@ public class ScoutDerbyHelper {
             psInsert.setInt(parNo++, critB); // par 4 - critB
             psInsert.setInt(parNo++, critC); // par 5 - critC
             psInsert.setInt(parNo++, critD); // par 6 - critD
-            psInsert.setInt(parNo++, team); // par 7 - team
-            psInsert.setInt(parNo++, matchNo); // par 8 - match
+            psInsert.setString(parNo++, comment); // par 7 - comment
+            psInsert.setInt(parNo++, team); // par 8 - team
+            psInsert.setInt(parNo++, matchNo); // par 9 - match
             psInsert.executeUpdate();
             parNo = 0;
-            System.out.println("---Updated: " + team + ":" + matchNo + ":" + critA + ":" + critB + ":" + critC + ":" + critD + "---");
+            System.out.println("---Updated: " + team + ":" + matchNo + ":" + critA + ":" + critB + ":" + critC + ":" + critD + ":" + comment +"---");
 
             /*
              * In embedded mode, an application should shut down the database.

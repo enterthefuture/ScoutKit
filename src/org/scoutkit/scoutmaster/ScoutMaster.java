@@ -305,7 +305,7 @@ public class ScoutMaster extends JFrame {
             int barThrow = teamstats.stat[2];
             int barCatch = teamstats.stat[3];
 
-            dhelper.insertEntry(match.team, match.match, high, low, barThrow, barCatch );
+            dhelper.insertEntry(match.team, match.match, high, low, barThrow, barCatch, teamstats.comment);
         }
 
         ResultSet rs = dhelper.printEntries();
