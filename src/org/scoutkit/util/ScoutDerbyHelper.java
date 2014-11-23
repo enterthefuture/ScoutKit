@@ -69,7 +69,7 @@ public class ScoutDerbyHelper {
                     + " B FLOAT NOT NULL,"
                     + " C FLOAT NOT NULL,"
                     + " D FLOAT NOT NULL,"
-                    + " COM VARCHAR(255),"
+                    + " comment VARCHAR(512),"
                     + " CONSTRAINT id PRIMARY KEY (team, matchNo)"
                     + ")");
             System.out.println("---Created table " + tableName + "---");
@@ -100,20 +100,19 @@ public class ScoutDerbyHelper {
         PreparedStatement psInsert;
         try {
             System.out.println("Connected to database " + dbName);
-            // insert statement: par 1 ID (bigint), par 2 team (int), par 3 match (int), par 4 critA (int), par 5 critB (int), par 6 critC (int), par 7 critD (int)
             psInsert = conn.prepareStatement(
                     "INSERT INTO " + tableName
-                    + "(team, matchNo, A, B, C, D, COM)"
+                    + "(team, matchNo, A, B, C, D, comment)"
                     + " VALUES (?, ?, ?, ?, ?, ?, ?)");
             statements.add(psInsert);
             int parNo = 1;
-            psInsert.setInt(parNo++, team); // par 2 - team
-            psInsert.setInt(parNo++, matchNo); // par 3 - match
-            psInsert.setInt(parNo++, critA); // par 4 - critA
-            psInsert.setInt(parNo++, critB); // par 5 - critB
-            psInsert.setInt(parNo++, critC); // par 6 - critC
-            psInsert.setInt(parNo++, critD); // par 7 - critD
-            psInsert.setString(parNo++, comment); // par 8 - comment
+            psInsert.setInt(parNo++, team); // par 1 - team
+            psInsert.setInt(parNo++, matchNo); // par 2 - match
+            psInsert.setInt(parNo++, critA); // par 3 - critA
+            psInsert.setInt(parNo++, critB); // par 4 - critB
+            psInsert.setInt(parNo++, critC); // par 5 - critC
+            psInsert.setInt(parNo++, critD); // par 6 - critD
+            psInsert.setString(parNo++, comment); // par 8 - Comment
             psInsert.executeUpdate();
             parNo = 0;
             System.out.println("---Inserted: " + team + ":" + matchNo + ":" + critA + ":" + critB + ":" + critC + ":" + critD + ":" + comment + "---");
@@ -159,23 +158,22 @@ public class ScoutDerbyHelper {
         PreparedStatement psInsert;
         try {
             //System.out.println("Connected to database " + dbName);
-            // insert statement: par 1 ID (bigint), par 2 team (int), par 3 match (int), par 4 critA (int), par 5 critB (int), par 6 critC (int), par 7 critD (int)
             psInsert = conn.prepareStatement(
                     "UPDATE " + tableName + " SET \n"
-                    + "A = ?, B = ?, C = ?, D = ?, COM=? \n"
+                    + "A = ?, B = ?, C = ?, D = ?, comment = ? \n"
                     + " WHERE team = ? AND matchNo = ?");
             statements.add(psInsert);
             int parNo = 1;
-            psInsert.setInt(parNo++, critA); // par 3 - critA
-            psInsert.setInt(parNo++, critB); // par 4 - critB
-            psInsert.setInt(parNo++, critC); // par 5 - critC
-            psInsert.setInt(parNo++, critD); // par 6 - critD
-            psInsert.setString(parNo++, comment); // par 7 - comment
-            psInsert.setInt(parNo++, team); // par 8 - team
-            psInsert.setInt(parNo++, matchNo); // par 9 - match
+            psInsert.setInt(parNo++, critA); // par 1 - critA
+            psInsert.setInt(parNo++, critB); // par 2 - critB
+            psInsert.setInt(parNo++, critC); // par 3 - critC
+            psInsert.setInt(parNo++, critD); // par 4 - critD
+            psInsert.setString(parNo++, comment); // par 5 - comment
+            psInsert.setInt(parNo++, team); // par 6 - team
+            psInsert.setInt(parNo++, matchNo); // par 7 - matchNo
             psInsert.executeUpdate();
             parNo = 0;
-            System.out.println("---Updated: " + team + ":" + matchNo + ":" + critA + ":" + critB + ":" + critC + ":" + critD + ":" + comment +"---");
+            System.out.println("---Updated: " + team + ":" + matchNo + ":" + critA + ":" + critB + ":" + critC + ":" + critD + ":" + comment + "---");
 
             /*
              * In embedded mode, an application should shut down the database.
@@ -211,7 +209,7 @@ public class ScoutDerbyHelper {
             s = conn.createStatement(); // create statement
             statements.add(s);
 
-            System.out.println("---Updating Entries---");
+            System.out.println("---Reading Entries---");
 
             rs = s.executeQuery("SELECT * FROM " + tableName + " ORDER BY team");
             //printResults(rs);
@@ -232,7 +230,7 @@ public class ScoutDerbyHelper {
             s = conn.createStatement(); // create statement
             statements.add(s);
 
-            System.out.println("---Updating Statistics---");
+            System.out.println("---Reading Statistics---");
 
             rs = s.executeQuery(statstring);
             //printResults(rs);

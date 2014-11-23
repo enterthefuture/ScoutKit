@@ -194,16 +194,38 @@ public class ScoutMaster extends JFrame {
 
 	private JPanel getEventPanel() {
         dhelper.openDB();
-        JPanel panel = new JPanel(new GridLayout(3,1));
-        panel.add(new JScrollPane(outputBox));
+        JPanel panel = new JPanel(new GridBagLayout());
+
+        GridBagConstraints gbc = new GridBagConstraints();
+        int row = 0;
+
+        gbc.fill = GridBagConstraints.BOTH;
+        gbc.gridy = row++;
+        gbc.gridx = 0;
+        gbc.weightx = 1;
+        gbc.weighty = 2;
+        panel.add(new JScrollPane(outputBox), gbc);
+
 
         // It creates and displays the table
         ResultSet rs = dhelper.printEntries();
         table = new JTable(buildTableModel(rs));
         table.setEnabled(false);
-        panel.add(new JScrollPane(table));
 
-		panel.add(getEventControlPanel());
+        gbc.fill = GridBagConstraints.BOTH;
+        gbc.gridy = row++;
+        gbc.gridx = 0;
+        gbc.weightx = 1;
+        gbc.weighty = 4;
+        panel.add(new JScrollPane(table), gbc);
+
+
+        gbc.fill = GridBagConstraints.BOTH;
+        gbc.gridy = row++;
+        gbc.gridx = 0;
+        gbc.weightx = 1;
+        gbc.weighty = 1;
+		    panel.add(getEventControlPanel(), gbc);
 
         dhelper.closeDB();
         return panel;
@@ -211,16 +233,37 @@ public class ScoutMaster extends JFrame {
 
     private JPanel getStatPanel() {
         dhelper.openDB();
-        JPanel panel = new JPanel(new GridLayout(3,1));
-        panel.add(new JScrollPane(sqlBox));
+        JPanel panel = new JPanel(new GridBagLayout());
+
+        GridBagConstraints gbc = new GridBagConstraints();
+        int row = 0;
+
+        gbc.fill = GridBagConstraints.BOTH;
+        gbc.gridy = row++;
+        gbc.gridx = 0;
+        gbc.weightx = 1;
+        gbc.weighty = 2;
+        panel.add(new JScrollPane(sqlBox), gbc);
 
         // It creates and displays the table
         ResultSet statrs = dhelper.printStats(sqlBox.getText());
         stattable = new JTable(buildTableModel(statrs));
         stattable.setEnabled(false);
-        panel.add(new JScrollPane(stattable));
 
-		panel.add(getStatControlPanel());
+        gbc.fill = GridBagConstraints.BOTH;
+        gbc.gridy = row++;
+        gbc.gridx = 0;
+        gbc.weightx = 1;
+        gbc.weighty = 4;
+        panel.add(new JScrollPane(stattable), gbc);
+
+
+        gbc.fill = GridBagConstraints.BOTH;
+        gbc.gridy = row++;
+        gbc.gridx = 0;
+        gbc.weightx = 1;
+        gbc.weighty = 1;
+		    panel.add(getStatControlPanel(), gbc);
 
         dhelper.closeDB();
         return panel;
@@ -229,7 +272,6 @@ public class ScoutMaster extends JFrame {
     private JPanel getEventControlPanel() {
         JPanel panel = new JPanel(new GridBagLayout());
         int row = 0;
-        panel.setSize(650, 100);
 
         GridBagConstraints gbc = new GridBagConstraints();
 
@@ -245,7 +287,6 @@ public class ScoutMaster extends JFrame {
     private JPanel getStatControlPanel() {
         JPanel panel = new JPanel(new GridBagLayout());
         int row = 0;
-        panel.setSize(650, 100);
 
         GridBagConstraints gbc = new GridBagConstraints();
 
@@ -304,7 +345,7 @@ public class ScoutMaster extends JFrame {
             int low = teamstats.stat[1];
             int barThrow = teamstats.stat[2];
             int barCatch = teamstats.stat[3];
-
+            
             dhelper.insertEntry(match.team, match.match, high, low, barThrow, barCatch, teamstats.comment);
         }
 
@@ -340,7 +381,7 @@ public class ScoutMaster extends JFrame {
                     MatchPair match = new MatchPair();
                     client = server.accept();
                     Message event = (Message) (new ObjectInputStream(client.getInputStream())).readObject();
-                    outputBox.append(event + "\n");
+                    //outputBox.append(event + "\n");
 
                     match.team = event.teamNo;
                     match.match = event.match;
@@ -353,15 +394,12 @@ public class ScoutMaster extends JFrame {
                         //System.out.println("New Team "+event.teamNo);
                     }
                     if(event.stat.equals("comment")) {
-                      System.out.println("Comment");
                       teamstats.comment = event.value;
                     } else {
-                      System.out.println("Stat");
                       teamstats.stat[Integer.parseInt(event.stat)] += Integer.parseInt(event.value);
-                      stats.put(match, teamstats);
                     }
-
-                    // outputBox.append(stats.toString() + "\n\n");
+                    stats.put(match, teamstats);
+                    outputBox.append(match + "/" + teamstats + "\n");
 
                     client.close();
                 } catch (Exception e) {

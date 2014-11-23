@@ -5,7 +5,6 @@
     <property name="src.dir"      value="${base.dir}/org/scoutkit"/>
     <property name="scoutbox.src.dir"      value="${src.dir}/scoutbox"/>
     <property name="scoutmaster.src.dir"      value="${src.dir}/scoutmaster"/>
-    <property name="scoutmaster.src.dir"      value="${src.dir}/scoutscore"/>
     <property name="util.src.dir"      value="${base.dir}/org/scoutkit/util"/>
 
     <property name="build.dir"   value="build"/>
@@ -15,18 +14,15 @@
 
     <property name="scoutbox.class.dir"      value="org/scoutkit/scoutbox"/>
     <property name="scoutmaster.class.dir"      value="org/scoutkit/scoutmaster"/>
-    <property name="scoutscore.class.dir"      value="org/scoutkit/scoutscore"/>
 
     <property name="util.class.dir"      value="org/scoutkit/util"/>
     <property name="derby.dir"      value="org/apache/derby"/>
 
     <property name="box-name"  value="ScoutBox"/>
     <property name="master-name"  value="ScoutMaster"/>
-    <property name="score-name"  value="ScoutScore"/>
 
     <property name="box-main-class"  value="org.scoutkit.scoutbox.ScoutBox"/>
     <property name="master-main-class"  value="org.scoutkit.scoutmaster.ScoutMaster"/>
-    <property name="score-main-class"  value="org.scoutkit.scoutscore.ScoutScore"/>
 
 
     <target name="clean">
@@ -60,12 +56,6 @@
             <zipgroupfileset dir="lib" includes="derby.jar" />
             <manifest>
                 <attribute name="Main-Class" value="${master-main-class}"/>
-            </manifest>
-        </jar>
-        <!-- Make ScoutScore.jar -->
-        <jar destfile="${jar.dir}/${ant.project.name}-${score-name}.jar" basedir="${classes.dir}" includes="${scoutscore.class.dir}/**,${util.class.dir}/ScoutDerbyHelper.class,${derby.dir}/**,ScoutKit.properties">
-            <manifest>
-                <attribute name="Main-Class" value="${score-main-class}"/>
             </manifest>
         </jar>
     </target>

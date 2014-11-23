@@ -51,6 +51,11 @@ public class ScoutBox extends JFrame {
     private JButton critC;
     private JButton critD;
 
+    private JButton critAN;
+    private JButton critBN;
+    private JButton critCN;
+    private JButton critDN;
+
 
     public ScoutBox(int serverPort) {
         super("ScoutBox: A FRC Scouting System");
@@ -69,9 +74,21 @@ public class ScoutBox extends JFrame {
         outputBox = new JTextArea();
         outputBox.setEditable(false);
 
-        ActionListener sendmsg = new ActionListener() {
+        ActionListener sendup = new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                sendUp(e.getActionCommand());
+                sendMsg(e.getActionCommand(), "1");
+            }
+        };
+
+        ActionListener senddwn = new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                sendMsg(e.getActionCommand(), "-1");
+            }
+        };
+
+        ActionListener sendcmt = new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                sendMsg("comment", comment.getText());
             }
         };
 
@@ -80,30 +97,45 @@ public class ScoutBox extends JFrame {
         critCText = (prop.containsKey("critCText")) ? prop.getProperty("critCText") : critCText;
         critDText = (prop.containsKey("critDText")) ? prop.getProperty("critDText") : critDText;
 
-        critAKey = (prop.containsKey("critAKey")) ? prop.getProperty("critAKey") : critAKey;
-        critBKey = (prop.containsKey("critBKey")) ? prop.getProperty("critBKey") : critBKey;
-        critCKey = (prop.containsKey("critCKey")) ? prop.getProperty("critCKey") : critCKey;
-        critDKey = (prop.containsKey("critDKey")) ? prop.getProperty("critDKey") : critDKey;
-
         critA = new JButton("1. "+critAText);
         critA.setMnemonic(KeyEvent.VK_1);
         critA.setActionCommand("0");
-        critA.addActionListener(sendmsg);
+        critA.addActionListener(sendup);
 
         critB = new JButton("2. "+critBText);
         critB.setMnemonic(KeyEvent.VK_2);
         critB.setActionCommand("1");
-        critB.addActionListener(sendmsg);
+        critB.addActionListener(sendup);
 
         critC = new JButton("3. "+critCText);
         critC.setMnemonic(KeyEvent.VK_3);
         critC.setActionCommand("2");
-        critC.addActionListener(sendmsg);
+        critC.addActionListener(sendup);
 
         critD = new JButton("4. "+critDText);
         critD.setMnemonic(KeyEvent.VK_4);
         critD.setActionCommand("3");
-        critD.addActionListener(sendmsg);
+        critD.addActionListener(sendup);
+
+        critAN = new JButton("7. "+critAText+"(-)");
+        critAN.setMnemonic(KeyEvent.VK_7);
+        critAN.setActionCommand("0");
+        critAN.addActionListener(senddwn);
+
+        critBN = new JButton("8. "+critBText+"(-)");
+        critBN.setMnemonic(KeyEvent.VK_8);
+        critBN.setActionCommand("1");
+        critBN.addActionListener(senddwn);
+
+        critCN = new JButton("9. "+critCText+"(-)");
+        critCN.setMnemonic(KeyEvent.VK_9);
+        critCN.setActionCommand("2");
+        critCN.addActionListener(senddwn);
+
+        critDN = new JButton("0. "+critDText+"(-)");
+        critDN.setMnemonic(KeyEvent.VK_0);
+        critDN.setActionCommand("3");
+        critDN.addActionListener(senddwn);
 
         send = new JButton("Send");
         send.setMnemonic(KeyEvent.VK_S);
@@ -113,8 +145,7 @@ public class ScoutBox extends JFrame {
 
         sendComment = new JButton("Send Comment");
         sendComment.setMnemonic(KeyEvent.VK_C);
-        sendComment.setActionCommand("comment");
-        sendComment.addActionListener(sendmsg);
+        sendComment.addActionListener(sendcmt);
 
         outputBox.setBorder(new BevelBorder(BevelBorder.RAISED));
 
@@ -239,14 +270,28 @@ public class ScoutBox extends JFrame {
         gbc.gridx = 0;
         panel.add(critA, gbc);
         gbc.gridx = 1;
+        panel.add(critAN, gbc);
+
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.gridy = row++;
+        gbc.gridx = 0;
         panel.add(critB, gbc);
+        gbc.gridx = 1;
+        panel.add(critBN, gbc);
 
         gbc.fill = GridBagConstraints.HORIZONTAL;
         gbc.gridy = row++;
         gbc.gridx = 0;
         panel.add(critC, gbc);
         gbc.gridx = 1;
+        panel.add(critCN, gbc);
+
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.gridy = row++;
+        gbc.gridx = 0;
         panel.add(critD, gbc);
+        gbc.gridx = 1;
+        panel.add(critDN, gbc);
 
         gbc.fill = GridBagConstraints.NONE;
         gbc.gridy = row++;
@@ -265,17 +310,13 @@ public class ScoutBox extends JFrame {
         return panel;
     }
 
-    private void sendUp(String stat) {
+    private void sendMsg(String stat, String value) {
         try {
             Socket remoteHost = new Socket(host.getText(), Integer.parseInt(port.getText()));
 
             ObjectOutputStream output = new ObjectOutputStream(remoteHost.getOutputStream());
             Message m;
-            if(stat == "comment") {
-              m = new Message(scoutID.getText(), Integer.parseInt(teamNo.getText()), Integer.parseInt(match.getText()), stat, comment.getText());
-            } else {
-              m = new Message(scoutID.getText(), Integer.parseInt(teamNo.getText()), Integer.parseInt(match.getText()), stat, "1");
-            }
+            m = new Message(scoutID.getText(), Integer.parseInt(teamNo.getText()), Integer.parseInt(match.getText()), stat, value);
 
             output.writeObject(m);
 
@@ -289,7 +330,6 @@ public class ScoutBox extends JFrame {
             System.err.println(e);
         }
     }
-
 
     private void clearFields() {
         teamNo.setText(null);
@@ -317,7 +357,7 @@ public class ScoutBox extends JFrame {
                 try {
                     client = server.accept();
 
-                    outputBox.append((new ObjectInputStream(client.getInputStream())).readObject().toString() + "\n\n");
+                    outputBox.append((new ObjectInputStream(client.getInputStream())).readObject().toString() + "\n");
 
                     client.close();
                 } catch (Exception e) {
