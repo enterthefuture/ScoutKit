@@ -1,4 +1,4 @@
-As of [v1.5 Release](https://github.com/enterthefuture/ScoutKit/releases/tag/v1.5) it is now possible to configure ScoutKit before compiling.
+As of [v1.5 Release](https://github.com/wastevensv/ScoutKit/releases/tag/v1.5) it is now possible to configure ScoutKit before compiling.
 
 
 #Dependencies#
